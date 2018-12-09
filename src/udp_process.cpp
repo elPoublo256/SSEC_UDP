@@ -27,15 +27,21 @@ Process1::Process1(const std::string& hostname)
     query = std::make_unique<ip::udp::resolver::query>
             (ip::udp::v4(), hostname, this->service_name);
     ep = *(resolver->resolve(*query));
+
 }
 
 void Process1::start()
 {
     try
     {
-        auto _hendler = [](const boost::system::error_code& err,
-                std::size_t num_bytes){};
-        auto boost_buf = boost::asio::buffer(buf_str);
+        socket->async_receive_from(
+                    boost::asio::buffer(buf),
+                    ep,
+                    boost::bind(& Process1::hendler, this,
+                                boost::asio::placeholders::error,
+                                boost::asio::placeholders::bytes_transferred)
+                    );
+
     }
     catch(std::exception &e)
     {

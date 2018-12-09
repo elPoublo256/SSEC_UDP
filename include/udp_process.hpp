@@ -1,9 +1,9 @@
 #pragma once
-#include <boost/asio.hpp>
+
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-
+#include <array>
 
 #define UDP_PORT 23456
 #define MAX_L 20
@@ -49,14 +49,15 @@ class Process1 : public UDP_Process
 public:
     std::size_t allMessSize;
     Process1(const std::string& hostname = std::string("0.0.0.0"));
-    std::string buf_str;
+    std::array<char,1> buf;
+
     std::unique_ptr<ip::udp::resolver> resolver;
     std::unique_ptr<ip::udp::resolver::query> query;
     std::unique_ptr<deadline_timer> timer;
     ~Process1() override;
     void start() override;
 
-     static void hendler(const boost::system::error_code& err,
+    void hendler(const boost::system::error_code& err,
                   std::size_t num_bytes)
      {}
 
