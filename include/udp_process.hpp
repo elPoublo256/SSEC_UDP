@@ -8,23 +8,15 @@
 #define UDP_PORT 23456
 #define MAX_L 20
 #define MIN_L 5
+#define MAX_FILE_SIZE 256
 #include <string>
 #include <fstream>
 #include <memory>
 #include <boost/array.hpp>
 using namespace boost::asio;
-class Massage
-{
-public:
-	std::size_t length_line;
-	std::string line;
-    Massage();
-    auto begin(){return line.begin();}
-    auto end() {return line.end();}
 
 
 
-};
 class UDP_Process
 {
 public:
@@ -32,7 +24,7 @@ public:
     virtual void start_working();
 protected:
 
-   std::unique_ptr<io_service> io;
+   io_service io;
    ip::udp::endpoint ep;//copyble, heve defult constructors
    std::unique_ptr<ip::udp::socket> socket;
    //TODO use boost log lib
@@ -47,19 +39,19 @@ protected:
 class Process1 : public UDP_Process
 {
 public:
-    std::size_t allMessSize;
-    Process1(const std::string& hostname = std::string("0.0.0.0"));
-    std::array<char,1> buf;
+    std::size_t size_file;
+    Process1();
+    std::array<char,MAX_L> buf;
+    std::ofstream result;
 
-    std::unique_ptr<ip::udp::resolver> resolver;
+
     std::unique_ptr<ip::udp::resolver::query> query;
-    std::unique_ptr<deadline_timer> timer;
+
     ~Process1() override;
     void start() override;
-
+    void stop();
     void hendler(const boost::system::error_code& err,
-                  std::size_t num_bytes)
-     {}
+                  std::size_t num_bytes);
 
 };
 ///print random string with char [a-z]
@@ -68,11 +60,16 @@ public:
 class Process2 : public UDP_Process
 {
 public:
-    Process2(const unsigned int& interval);
+    unsigned int _interval;
+    typedef ip::udp::resolver::query b_query;
+    deadline_timer _timer;
+    ip::udp::resolver resolver;
+    std::unique_ptr<b_query> query;
+    Process2(const unsigned int& interval, char* server_name );
     unsigned int time_interval;
-    std::ofstream fileStream;
-    std::string mass;
-
-
-    void send_mess();
+    void start() override;
+    std::string buf_for_sebd;
+    void send_mess(const boost::system::error_code& error,
+                   boost::asio::deadline_timer* _timer);
+    ~Process2() override;
 };
